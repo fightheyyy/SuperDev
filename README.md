@@ -1,80 +1,80 @@
 <div align="center">
 
-<img src="./docs/superdev-icon.svg" width="96" alt="SuperDev icon">
+<img src="./docs/superdev-icon.svg" width="96" alt="SuperDev 图标">
 
 # SuperDev
 
-### A spec / plan gate for AI-assisted engineering
+### 给 AI 辅助工程用的 SPEC / PLAN 架构门禁
 
-**Coding agents need an architecture gate.**
+**Coding agent 需要一个 architecture gate。**
 
-[Why](#why) · [Core Loop](#core-loop) · [What It Enforces](#what-it-enforces) · [Quick Start](#quick-start) · [Repo Contents](#repo-contents)
+[English README](./README.en.md) · [为什么需要](#为什么需要) · [核心流程](#核心流程) · [它约束什么](#它约束什么) · [快速开始](#快速开始) · [仓库内容](#仓库内容)
 
 </div>
 
 ---
 
-> What if your coding agent had to understand the current architecture and the target architecture before touching production code?
+> 如果 coding agent 在改生产代码之前，必须先说清楚当前架构和目标架构，会怎么样？
 
-Better prompts help, but long-lived repository work fails when the agent starts coding before it knows what architecture it is preserving or moving toward.
+更好的 prompt 有用，但长期仓库开发真正容易失控的地方，是 agent 还没搞清楚自己要保护什么架构、要走向什么架构，就已经开始改代码。
 
-SuperDev is a lightweight engineering standard for long-lived AI-assisted repositories.
+SuperDev 是一套给长期 AI-assisted repository 用的轻量工程标准。
 
-It makes the agent keep architecture, implementation, execution plan, and verification evidence in sync through `SPEC.md` and `PLAN.md` files. The point is not more documentation for its own sake. The point is to stop coding agents from drifting into broad rewrites, stale plans, and "it worked once" changes that nobody can explain later.
+它要求 agent 通过 `SPEC.md` 和 `PLAN.md` 同步维护架构、实现、执行计划和验证证据。目的不是为了多写文档，而是防止 coding agent 漂到大重构、过期计划和“这次刚好跑通但没人解释得清”的改动里。
 
-SuperDev's core rule is simple:
+SuperDev 的核心规则很简单：
 
-> **No substantial implementation before the target architecture is clear.**
+> **目标架构没说清楚之前，不做实质生产实现。**
 
 ---
 
-## Why
+## 为什么需要
 
-AI coding agents are fast enough to create technical debt before a human notices. The failure mode is usually not "the agent cannot write code". The failure mode is that the agent starts coding before it has a stable contract for what the system is, where the boundary is, and what the change is supposed to move toward.
+AI coding agent 写代码太快，快到人还没发现，它已经开始制造技术债。失败模式通常不是“agent 不会写代码”，而是它在没有稳定合同之前就开始动手：系统是什么、边界在哪里、这次修改要把系统带向哪里，都没定义清楚。
 
-| Failure mode | SuperDev answer |
+| 失败模式 | SuperDev 的做法 |
 |---|---|
-| The agent starts coding from a vague request | Require current and target architecture before substantial implementation |
-| README, plans, and code disagree | Keep `SPEC.md`, `PLAN.md`, and implementation synchronized |
-| A small change turns into a broad rewrite | Make scope, boundaries, non-goals, and acceptance criteria explicit |
-| Long-lived modules become tribal knowledge | Give every durable module its own architecture and execution state |
-| "Done" means only "files changed" | Require verification evidence in the plan |
+| agent 从一个模糊需求直接开始写代码 | 实质实现前必须确认 Current / Target Architecture |
+| README、计划和代码互相打架 | 让 `SPEC.md`、`PLAN.md` 和实现保持同步 |
+| 一个小改动变成大重构 | 显式写出范围、边界、非目标和验收标准 |
+| 长期模块变成口口相传的知识 | 每个 durable module 都有自己的架构和执行状态 |
+| “完成”只代表文件变了 | 在 plan 里记录验证证据 |
 
 ---
 
-## Core Loop
+## 核心流程
 
 ```text
-request
-  -> identify repo / module boundary
-  -> read SPEC.md + PLAN.md
-  -> verify Current Architecture
-  -> clarify Target Architecture
-  -> implement the smallest matching change
-  -> update SPEC.md / PLAN.md
-  -> record verification evidence
+需求
+  -> 判断 repo / module 边界
+  -> 读取 SPEC.md + PLAN.md
+  -> 核对 Current Architecture
+  -> 澄清 Target Architecture
+  -> 做最小匹配实现
+  -> 更新 SPEC.md / PLAN.md
+  -> 记录验证证据
 ```
 
-SuperDev turns architecture into a live contract:
+SuperDev 把架构变成一个 live contract：
 
-- `SPEC.md` says what the system is, what is in scope, what the current architecture is, and what the target architecture is.
-- `PLAN.md` says what is done, what is next, who owns it, what risks remain, and what evidence proves progress.
-- Mermaid diagrams make the current and target shape visible enough for a coding agent to reason about.
+- `SPEC.md` 说明系统是什么、范围是什么、当前架构是什么、目标架构是什么。
+- `PLAN.md` 说明已经完成什么、下一步是什么、谁负责、风险是什么、什么证据证明进展有效。
+- Mermaid 图让 current / target shape 足够可见，agent 才能围绕它做工程判断。
 
 ---
 
-## What It Enforces
+## 它约束什么
 
-| Area | Rule |
+| 区域 | 规则 |
 |---|---|
-| Root repository | Maintain root `SPEC.md` and `PLAN.md` for repository-wide architecture and execution state |
-| Durable modules | Maintain `<module>/SPEC.md` and `<module>/PLAN.md` for every long-lived subsystem |
-| Current architecture | `SPEC.md` must show what the current code actually implements |
-| Target architecture | `SPEC.md` must show the architecture the current work is moving toward |
-| Implementation gate | If the target Mermaid diagram is missing, vague, or inconsistent, stop before production code |
-| Plan hygiene | Completed work must be backed by code, docs, and verification evidence |
+| 根仓库 | 维护根级 `SPEC.md` 和 `PLAN.md`，描述全局架构和执行状态 |
+| 长期模块 | 每个长期子系统维护 `<module>/SPEC.md` 和 `<module>/PLAN.md` |
+| 当前架构 | `SPEC.md` 必须描述当前代码实际实现的架构 |
+| 目标架构 | `SPEC.md` 必须描述当前工作要走向的架构 |
+| 实现门禁 | 如果目标 Mermaid 图缺失、模糊或和需求冲突，先停下来，不写生产代码 |
+| 计划卫生 | 标记完成的工作必须有代码、文档和验证证据支撑 |
 
-Minimum `SPEC.md` shape:
+最小 `SPEC.md` 结构：
 
 ````md
 ## Current Architecture
@@ -94,24 +94,24 @@ flowchart LR
 ```
 ````
 
-Keep diagrams simple and truthful. `Current Architecture` is reality, not aspiration. `Target Architecture` is the next intended design, not an unlimited vision board.
+图要简单、横向、真实。`Current Architecture` 是现实，不是愿景。`Target Architecture` 是当前开发方向，不是无限未来蓝图。
 
 ---
 
-## Quick Start
+## 快速开始
 
-Use it in Codex:
+在 Codex 里使用：
 
 ```text
 $superdev
 ```
 
-For repositories that should always follow this standard, copy or adapt:
+如果某个仓库希望长期遵守这套标准，可以复制或改写：
 
-- `AGENTS.md` for Codex and general coding agents
-- `CLAUDE.md` for Claude Code
+- `AGENTS.md`：给 Codex 和通用 coding agent 使用
+- `CLAUDE.md`：给 Claude Code 使用
 
-Then maintain:
+然后维护：
 
 ```text
 docs/SPEC.md
@@ -120,36 +120,36 @@ docs/PLAN.md
 <module>/PLAN.md
 ```
 
-Use SuperDev when the work touches durable architecture, shared runtime behavior, long-lived modules, benchmark systems, role/skill systems, adapters, dashboards, replay/eval infrastructure, or anything that future agents will need to understand again.
+适合使用 SuperDev 的场景：长期架构、共享 runtime、长期模块、benchmark、role / skill 系统、adapter、dashboard、replay / eval 基础设施，或者任何未来 agent 还要回来理解的东西。
 
-Do not use it for tiny typo fixes, one-off scripts, throwaway local experiments, or copy edits unless they become durable subsystems.
+小 typo、一次性脚本、临时实验和普通文案修改不需要上 SuperDev，除非它们开始变成 durable subsystem。
 
 ---
 
-## Repo Contents
+## 仓库内容
 
-- `SKILL.md`: the reusable Codex skill. Invoke it as `$superdev`.
-- `AGENTS.md`: instructions for Codex and general coding agents.
-- `CLAUDE.md`: instructions for Claude Code.
-- `agents/openai.yaml`: Codex skill metadata for UI discovery.
+- `SKILL.md`：可复用 Codex skill，使用 `$superdev` 调用。
+- `AGENTS.md`：给 Codex 和通用 coding agent 的说明。
+- `CLAUDE.md`：给 Claude Code 的说明。
+- `agents/openai.yaml`：Codex skill UI 展示元数据。
 
-The `agents/` folder is not a multi-agent implementation. It is part of the Codex skill packaging format.
+`agents/` 目录不是多 agent 实现，它只是 Codex skill packaging 的一部分。
 
 ---
 
 ## SuperDev + SuperGoal
 
-SuperDev pairs naturally with [SuperGoal](https://github.com/fightheyyy/SuperGoal):
+SuperDev 和 [SuperGoal](https://github.com/fightheyyy/SuperGoal) 很适合一起用：
 
-- **SuperGoal** turns rough requests into acceptance-first goal contracts.
-- **SuperDev** makes sure repository work stays aligned with architecture and plan state.
+- **SuperGoal** 把粗糙需求变成验收优先的 goal contract。
+- **SuperDev** 确保仓库实现始终贴着架构和计划状态走。
 
-Together:
+组合起来就是：
 
 ```text
-rough request
+粗需求
   -> SuperGoal acceptance contract
   -> SuperDev architecture gate
-  -> narrow implementation
-  -> verification evidence
+  -> 窄范围实现
+  -> 验证证据
 ```
