@@ -4,152 +4,139 @@
 
 # SuperDev
 
-### 给 AI 辅助工程用的 SPEC / PLAN 架构门禁
+### 只用两张 Mermaid，让 AI 编码始终贴着架构走
 
-**Coding agent 需要一个 architecture gate。**
+**Current Architecture 说清现在，Target Architecture 说清下一步。然后让模型自己做事。**
 
-[English README](./README.en.md) · [为什么需要](#为什么需要) · [核心流程](#核心流程) · [它约束什么](#它约束什么) · [快速开始](#快速开始) · [仓库内容](#仓库内容)
+[![GitHub stars](https://img.shields.io/github/stars/fightheyyy/SuperDev?style=flat&color=0B0D10)](https://github.com/fightheyyy/SuperDev)
+![Codex Skill](https://img.shields.io/badge/Codex-Skill-0B0D10)
+![Claude Code](https://img.shields.io/badge/Claude_Code-Instructions-D4AF37)
+![Mermaid](https://img.shields.io/badge/Mermaid-Architecture-FF3670)
+
+[English](./README.en.md) · [30 秒看懂](#30-秒看懂) · [为什么只看两张图](#为什么只看两张图) · [快速开始](#快速开始)
 
 </div>
 
 ---
 
-> 如果 coding agent 在改生产代码之前，必须先说清楚当前架构和目标架构，会怎么样？
+SuperDev 是一个面向 **AI coding agent、Codex、Claude Code** 的软件架构工作流。
 
-更好的 prompt 有用，但长期仓库开发真正容易失控的地方，是 agent 还没搞清楚自己要保护什么架构、要走向什么架构，就已经开始改代码。
+模型越来越强，真正稀缺的已经不是更多微观约束，而是准确的架构上下文。SuperDev 的设计思路可以压缩成两张可读的 Mermaid：
 
-SuperDev 是一套给长期 AI-assisted repository 用的轻量工程标准。
+- **Current Architecture**：系统现在真实怎么工作。
+- **Target Architecture**：这次修改要把系统带到哪里。
 
-它要求 agent 通过 `SPEC.md` 和 `PLAN.md` 同步维护架构、实现、执行计划和验证证据。目的不是为了多写文档，而是防止 coding agent 漂到大重构、过期计划和“这次刚好跑通但没人解释得清”的改动里。
+两张图足够清楚，agent 就能理解差异、完成实现，再把 Current 更新成新的现实。仓库现有的 `SPEC.md` / `PLAN.md` 规则负责组织和同步信息，但真正让模型理解系统的核心，始终是 Current / Target Architecture。
 
-SuperDev 的核心规则很简单：
+## 30 秒看懂
 
-> **目标架构没说清楚之前，不做实质生产实现。**
-
----
-
-## 为什么需要
-
-AI coding agent 写代码太快，快到人还没发现，它已经开始制造技术债。失败模式通常不是“agent 不会写代码”，而是它在没有稳定合同之前就开始动手：系统是什么、边界在哪里、这次修改要把系统带向哪里，都没定义清楚。
-
-| 失败模式 | SuperDev 的做法 |
-|---|---|
-| agent 从一个模糊需求直接开始写代码 | 实质实现前必须确认 Current / Target Architecture |
-| README、计划和代码互相打架 | 让 `SPEC.md`、`PLAN.md` 和实现保持同步 |
-| 一个小改动变成大重构 | 显式写出范围、边界、非目标和验收标准 |
-| 长期模块变成口口相传的知识 | 每个 durable module 都有自己的架构和执行状态 |
-| “完成”只代表文件变了 | 在 plan 里记录验证证据 |
-
----
-
-## 核心流程
-
-```text
-需求
-  -> 判断 repo / module 边界
-  -> 读取 SPEC.md + PLAN.md
-  -> 核对 Current Architecture
-  -> 澄清 Target Architecture
-  -> 做最小匹配实现
-  -> 更新 SPEC.md / PLAN.md
-  -> 记录验证证据
+```mermaid
+flowchart LR
+    Request["需求"] --> Current["Current Architecture<br/>现在怎么工作"]
+    Request --> Target["Target Architecture<br/>要变成什么"]
+    Current --> Gap["理解差异"]
+    Target --> Gap
+    Gap --> Build["最小匹配实现"]
+    Build --> Sync["更新 Current<br/>成为新现实"]
 ```
 
-SuperDev 把架构变成一个 live contract：
+这两张图是给强模型的共享上下文：不限制它具体怎么写代码，只让它知道正在保护什么、准备改变什么。
 
-- `SPEC.md` 说明系统是什么、范围是什么、当前架构是什么、目标架构是什么。
-- `PLAN.md` 说明已经完成什么、下一步是什么、谁负责、风险是什么、什么证据证明进展有效。
-- Mermaid 图让 current / target shape 足够可见，agent 才能围绕它做工程判断。
+## 为什么只看两张图
 
----
+| 架构图 | 回答的问题 | 最重要的要求 |
+|---|---|---|
+| Current Architecture | 系统现在到底怎么工作？ | 必须忠于现有代码，不能画愿景 |
+| Target Architecture | 这次修改要把系统带到哪里？ | 只表达当前方向，不画无限路线图 |
 
-## 它约束什么
+Current 和 Target 之间的差异，就是 agent 真正需要解决的问题。相比继续增加 prompt 规则，这种表达更短、更稳定，也更适合人和模型一起 review。
 
-| 区域 | 规则 |
-|---|---|
-| 根仓库 | 维护根级 `SPEC.md` 和 `PLAN.md`，描述全局架构和执行状态 |
-| 长期模块 | 每个长期子系统维护 `<module>/SPEC.md` 和 `<module>/PLAN.md` |
-| 当前架构 | `SPEC.md` 必须描述当前代码实际实现的架构 |
-| 目标架构 | `SPEC.md` 必须描述当前工作要走向的架构 |
-| 实现门禁 | 如果目标 Mermaid 图缺失、模糊或和需求冲突，先停下来，不写生产代码 |
-| 计划卫生 | 标记完成的工作必须有代码、文档和验证证据支撑 |
+## 快速开始
 
-最小 `SPEC.md` 结构：
+### Codex
+
+把仓库安装为本地 skill：
+
+```bash
+git clone https://github.com/fightheyyy/SuperDev.git ~/.codex/skills/superdev
+```
+
+然后在任务里调用：
+
+```text
+$superdev 按当前架构和目标架构完成这次改动。
+```
+
+### Claude Code / 其他 coding agent
+
+- 将 [`CLAUDE.md`](./CLAUDE.md) 的规则合并到项目现有的 `CLAUDE.md`。
+- 将 [`AGENTS.md`](./AGENTS.md) 的规则合并到项目现有的 `AGENTS.md`。
+
+让对应的 coding agent 能读取这些说明即可。
+
+## 最小模板
+
+可以直接在项目的 `SPEC.md` 里使用这组最小结构：
 
 ````md
+# Architecture
+
 ## Current Architecture
 
 ```mermaid
 flowchart LR
-    A["current input"] --> B["current component"]
-    B --> C["current output"]
+    Input["用户请求"] --> App["当前系统"]
+    App --> Output["当前结果"]
 ```
 
 ## Target Architecture
 
 ```mermaid
 flowchart LR
-    A["target input"] --> B["target component"]
-    B --> C["target output"]
+    Input["用户请求"] --> App["目标系统"]
+    App --> New["新增能力"]
+    App --> Output["目标结果"]
 ```
 ````
 
-图要简单、横向、真实。`Current Architecture` 是现实，不是愿景。`Target Architecture` 是当前开发方向，不是无限未来蓝图。
+## Mermaid 怎么画才有用
 
----
+- 优先使用 `flowchart LR`，让变化从左到右阅读。
+- 画逻辑组件和关键关系，不要把文件树、方法名和调用日志搬进图里。
+- 节点标签保持短小，整张图最好几秒内能扫完。
+- Current 是现实，不是愿望；Target 是当前方向，不是无限路线图。
+- 两张图尽量使用同样的布局，只突出真正发生变化的部分。
 
-## 快速开始
+图的目标不是覆盖所有细节，而是让系统变化一眼可读。
 
-在 Codex 里使用：
+## 什么时候适合用
 
-```text
-$superdev
-```
+适合：
 
-如果某个仓库希望长期遵守这套标准，可以复制或改写：
+- 长期维护的仓库或模块；
+- 新能力改变了组件边界、数据流或依赖方向；
+- 重构、迁移、平台化、adapter/runtime 变化；
+- 未来还会有其他人或 agent 回来继续开发的系统。
 
-- `AGENTS.md`：给 Codex 和通用 coding agent 使用
-- `CLAUDE.md`：给 Claude Code 使用
+不需要：
 
-然后维护：
-
-```text
-docs/SPEC.md
-docs/PLAN.md
-<module>/SPEC.md
-<module>/PLAN.md
-```
-
-适合使用 SuperDev 的场景：长期架构、共享 runtime、长期模块、benchmark、role / skill 系统、adapter、dashboard、replay / eval 基础设施，或者任何未来 agent 还要回来理解的东西。
-
-小 typo、一次性脚本、临时实验和普通文案修改不需要上 SuperDev，除非它们开始变成 durable subsystem。
-
----
+- typo、普通文案和依赖版本更新；
+- 不改变逻辑结构的小 bug fix；
+- 一次性脚本和随手实验。
 
 ## 仓库内容
 
-- `SKILL.md`：可复用 Codex skill，使用 `$superdev` 调用。
-- `AGENTS.md`：给 Codex 和通用 coding agent 的说明。
-- `CLAUDE.md`：给 Claude Code 的说明。
-- `agents/openai.yaml`：Codex skill UI 展示元数据。
+- [`SKILL.md`](./SKILL.md)：可直接安装的 Codex skill。
+- [`AGENTS.md`](./AGENTS.md)：Codex 和通用 coding agent 规则。
+- [`CLAUDE.md`](./CLAUDE.md)：Claude Code 规则。
+- [`agents/openai.yaml`](./agents/openai.yaml)：Codex skill 展示元数据。
 
-`agents/` 目录不是多 agent 实现，它只是 Codex skill packaging 的一部分。
+## 和 SuperGoal 一起用
 
----
-
-## SuperDev + SuperGoal
-
-SuperDev 和 [SuperGoal](https://github.com/fightheyyy/SuperGoal) 很适合一起用：
-
-- **SuperGoal** 把粗糙需求变成验收优先的 goal contract。
-- **SuperDev** 确保仓库实现始终贴着架构和计划状态走。
-
-组合起来就是：
+[SuperGoal](https://github.com/fightheyyy/SuperGoal) 负责把粗需求整理成清晰目标，SuperDev 负责让实现贴着架构走：
 
 ```text
-粗需求
-  -> SuperGoal acceptance contract
-  -> SuperDev architecture gate
-  -> 窄范围实现
-  -> 验证证据
+粗需求 → SuperGoal 明确目标 → SuperDev 对齐 Current / Target → 实现
 ```
+
+如果你也认为强模型需要的是清楚上下文，而不是更多流程，欢迎点一个 Star，让更多人看到这种更轻的 AI-assisted engineering 方式。

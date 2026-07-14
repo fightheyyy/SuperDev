@@ -4,154 +4,139 @@
 
 # SuperDev
 
-### A spec / plan gate for AI-assisted engineering
+### Keep AI coding agents on architecture with two Mermaid diagrams
 
-**Coding agents need an architecture gate.**
+**Current Architecture explains what exists. Target Architecture explains what changes. Then let the model work.**
 
-[Why](#why) · [Core Loop](#core-loop) · [What It Enforces](#what-it-enforces) · [Quick Start](#quick-start) · [Repo Contents](#repo-contents)
+[![GitHub stars](https://img.shields.io/github/stars/fightheyyy/SuperDev?style=flat&color=0B0D10)](https://github.com/fightheyyy/SuperDev)
+![Codex Skill](https://img.shields.io/badge/Codex-Skill-0B0D10)
+![Claude Code](https://img.shields.io/badge/Claude_Code-Instructions-D4AF37)
+![Mermaid](https://img.shields.io/badge/Mermaid-Architecture-FF3670)
 
-[中文 README](./README.md)
+[中文](./README.md) · [30-second idea](#the-30-second-idea) · [Why only two diagrams](#why-only-two-diagrams) · [Quick start](#quick-start)
 
 </div>
 
 ---
 
-> What if your coding agent had to understand the current architecture and the target architecture before touching production code?
+SuperDev is a lightweight software architecture workflow for **AI coding agents, Codex, and Claude Code**.
 
-Better prompts help, but long-lived repository work fails when the agent starts coding before it knows what architecture it is preserving or moving toward.
+As models get stronger, the scarce input is no longer another layer of microscopic constraints. It is accurate architectural context. SuperDev's design idea can be reduced to two readable Mermaid maps:
 
-SuperDev is a lightweight engineering standard for long-lived AI-assisted repositories.
+- **Current Architecture**: how the system actually works now.
+- **Target Architecture**: how the requested change should leave it working.
 
-It makes the agent keep architecture, implementation, execution plan, and verification evidence in sync through `SPEC.md` and `PLAN.md` files. The point is not more documentation for its own sake. The point is to stop coding agents from drifting into broad rewrites, stale plans, and "it worked once" changes that nobody can explain later.
+When both maps are clear, an agent can understand the gap, implement the change, and update Current to reflect the new reality. The repository's existing `SPEC.md` / `PLAN.md` rules organize and synchronize that information, but Current / Target Architecture remains the context that actually helps the model understand the system.
 
-SuperDev's core rule is simple:
+## The 30-second idea
 
-> **No substantial implementation before the target architecture is clear.**
-
----
-
-## Why
-
-AI coding agents are fast enough to create technical debt before a human notices. The failure mode is usually not "the agent cannot write code". The failure mode is that the agent starts coding before it has a stable contract for what the system is, where the boundary is, and what the change is supposed to move toward.
-
-| Failure mode | SuperDev answer |
-|---|---|
-| The agent starts coding from a vague request | Require current and target architecture before substantial implementation |
-| README, plans, and code disagree | Keep `SPEC.md`, `PLAN.md`, and implementation synchronized |
-| A small change turns into a broad rewrite | Make scope, boundaries, non-goals, and acceptance criteria explicit |
-| Long-lived modules become tribal knowledge | Give every durable module its own architecture and execution state |
-| "Done" means only "files changed" | Require verification evidence in the plan |
-
----
-
-## Core Loop
-
-```text
-request
-  -> identify repo / module boundary
-  -> read SPEC.md + PLAN.md
-  -> verify Current Architecture
-  -> clarify Target Architecture
-  -> implement the smallest matching change
-  -> update SPEC.md / PLAN.md
-  -> record verification evidence
+```mermaid
+flowchart LR
+    Request["Request"] --> Current["Current Architecture<br/>what exists now"]
+    Request --> Target["Target Architecture<br/>where this change goes"]
+    Current --> Gap["Understand the gap"]
+    Target --> Gap
+    Gap --> Build["Small aligned change"]
+    Build --> Sync["Refresh Current<br/>as the new reality"]
 ```
 
-SuperDev turns architecture into a live contract:
+The diagrams give a strong model shared context. They do not dictate how to write every line; they show what the agent is protecting and what it is changing.
 
-- `SPEC.md` says what the system is, what is in scope, what the current architecture is, and what the target architecture is.
-- `PLAN.md` says what is done, what is next, who owns it, what risks remain, and what evidence proves progress.
-- Mermaid diagrams make the current and target shape visible enough for a coding agent to reason about.
+## Why only two diagrams
 
----
+| Architecture map | Question it answers | Most important rule |
+|---|---|---|
+| Current Architecture | How does the system actually work now? | Match the code; do not draw a wish |
+| Target Architecture | Where should this change take the system? | Show the current direction, not an endless roadmap |
 
-## What It Enforces
+The gap between Current and Target is the problem the agent needs to solve. This is shorter and more stable than adding more prompt rules, and easier for humans and models to review together.
 
-| Area | Rule |
-|---|---|
-| Root repository | Maintain root `SPEC.md` and `PLAN.md` for repository-wide architecture and execution state |
-| Durable modules | Maintain `<module>/SPEC.md` and `<module>/PLAN.md` for every long-lived subsystem |
-| Current architecture | `SPEC.md` must show what the current code actually implements |
-| Target architecture | `SPEC.md` must show the architecture the current work is moving toward |
-| Implementation gate | If the target Mermaid diagram is missing, vague, or inconsistent, stop before production code |
-| Plan hygiene | Completed work must be backed by code, docs, and verification evidence |
+## Quick start
 
-Minimum `SPEC.md` shape:
+### Codex
+
+Install the repository as a local skill:
+
+```bash
+git clone https://github.com/fightheyyy/SuperDev.git ~/.codex/skills/superdev
+```
+
+Then invoke it in a task:
+
+```text
+$superdev implement this change while keeping current and target architecture aligned.
+```
+
+### Claude Code and other coding agents
+
+- Merge the guidance in [`CLAUDE.md`](./CLAUDE.md) into your project's existing `CLAUDE.md`.
+- Merge the guidance in [`AGENTS.md`](./AGENTS.md) into your project's existing `AGENTS.md`.
+
+The corresponding coding agent only needs access to these instructions.
+
+## Minimal template
+
+Use this minimal structure directly in your project's `SPEC.md`:
 
 ````md
+# Architecture
+
 ## Current Architecture
 
 ```mermaid
 flowchart LR
-    A["current input"] --> B["current component"]
-    B --> C["current output"]
+    Input["Request"] --> App["Current system"]
+    App --> Output["Current result"]
 ```
 
 ## Target Architecture
 
 ```mermaid
 flowchart LR
-    A["target input"] --> B["target component"]
-    B --> C["target output"]
+    Input["Request"] --> App["Target system"]
+    App --> New["New capability"]
+    App --> Output["Target result"]
 ```
 ````
 
-Keep diagrams simple and truthful. `Current Architecture` is reality, not aspiration. `Target Architecture` is the next intended design, not an unlimited vision board.
+## Make Mermaid useful
 
----
+- Prefer `flowchart LR` so change reads from left to right.
+- Show logical components and important relationships, not file trees, method names, or trace logs.
+- Keep labels short and the whole map scannable in seconds.
+- Current is reality, not aspiration. Target is the direction of this change, not an unlimited roadmap.
+- Keep the layouts comparable and highlight only the relationships that actually change.
 
-## Quick Start
+The goal is not to capture every detail. It is to make the system change readable at a glance.
 
-Use it in Codex:
+## When to use it
 
-```text
-$superdev
-```
+Use SuperDev for:
 
-For repositories that should always follow this standard, copy or adapt:
+- long-lived repositories and modules;
+- features that change component boundaries, data flow, or dependency direction;
+- refactors, migrations, platforms, adapters, and runtime changes;
+- systems that another human or agent will need to understand later.
 
-- `AGENTS.md` for Codex and general coding agents
-- `CLAUDE.md` for Claude Code
+Skip it for:
 
-Then maintain:
+- typos, copy edits, and dependency bumps;
+- small bug fixes that do not change logical structure;
+- one-off scripts and throwaway experiments.
 
-```text
-docs/SPEC.md
-docs/PLAN.md
-<module>/SPEC.md
-<module>/PLAN.md
-```
+## Repository contents
 
-Use SuperDev when the work touches durable architecture, shared runtime behavior, long-lived modules, benchmark systems, role/skill systems, adapters, dashboards, replay/eval infrastructure, or anything that future agents will need to understand again.
+- [`SKILL.md`](./SKILL.md): installable Codex skill.
+- [`AGENTS.md`](./AGENTS.md): instructions for Codex and general coding agents.
+- [`CLAUDE.md`](./CLAUDE.md): instructions for Claude Code.
+- [`agents/openai.yaml`](./agents/openai.yaml): Codex skill discovery metadata.
 
-Do not use it for tiny typo fixes, one-off scripts, throwaway local experiments, or copy edits unless they become durable subsystems.
+## Pair it with SuperGoal
 
----
-
-## Repo Contents
-
-- `SKILL.md`: the reusable Codex skill. Invoke it as `$superdev`.
-- `AGENTS.md`: instructions for Codex and general coding agents.
-- `CLAUDE.md`: instructions for Claude Code.
-- `agents/openai.yaml`: Codex skill metadata for UI discovery.
-
-The `agents/` folder is not a multi-agent implementation. It is part of the Codex skill packaging format.
-
----
-
-## SuperDev + SuperGoal
-
-SuperDev pairs naturally with [SuperGoal](https://github.com/fightheyyy/SuperGoal):
-
-- **SuperGoal** turns rough requests into acceptance-first goal contracts.
-- **SuperDev** makes sure repository work stays aligned with architecture and plan state.
-
-Together:
+[SuperGoal](https://github.com/fightheyyy/SuperGoal) clarifies a rough request. SuperDev keeps implementation aligned with the architecture:
 
 ```text
-rough request
-  -> SuperGoal acceptance contract
-  -> SuperDev architecture gate
-  -> narrow implementation
-  -> verification evidence
+rough request → SuperGoal clarifies the goal → SuperDev aligns Current / Target → implementation
 ```
+
+If you also think strong models need clearer context rather than more process, star the repository and help more builders discover a lighter approach to AI-assisted engineering.
