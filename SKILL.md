@@ -1,6 +1,6 @@
 ---
 name: superdev
-description: "Use when Codex is asked to develop, modify, refactor, or plan work for a long-lived repository or module using the SuperDev spec / plan gate. Enforce root and module SPEC.md + PLAN.md maintenance, require each SPEC.md to contain Current Architecture and Target Architecture Mermaid diagrams, and block substantial implementation until the target architecture is clear."
+description: "Use when Codex is asked to develop, modify, refactor, or plan work for a long-lived repository or module using the SuperDev spec / plan gate. Enforce root and module SPEC.md + PLAN.md maintenance, require each SPEC.md to contain Current Architecture and Target Architecture Mermaid diagrams, infer the target proactively, and ask the user only when a material architectural fork cannot be resolved safely."
 ---
 
 # SuperDev
@@ -28,7 +28,25 @@ Before substantial code changes:
    - `Target Architecture` with a Mermaid diagram that matches the requested direction.
 5. If docs are missing, stale, or unclear, update or discuss the docs first.
 
-If `Target Architecture` is absent, vague, or inconsistent with the user's request, stop before production implementation. Ask for clarification or draft the target architecture update for review, depending on the user's desired level of autonomy.
+If `Target Architecture` is absent, stale, or incomplete, infer and draft the most reasonable target from the request, current code, and existing architecture before asking the user. A missing diagram alone is not a reason to interrupt the user. Pause only when no safe target can be inferred under the rules below.
+
+## Target Alignment
+
+Treat target alignment as model-led reasoning, not a mandatory approval ceremony:
+
+1. Infer the intended target from the request, current implementation, and `Current Architecture`.
+2. Draft or update the `Target Architecture` Mermaid diagram before asking questions.
+3. State important assumptions and proceed without confirmation when they are local, reversible, in scope, and preserve existing public contracts and data compatibility.
+4. Pause only when plausible choices would materially change one or more of:
+   - system or module boundaries;
+   - public APIs, schemas, or compatibility guarantees;
+   - persistent data shape or an irreversible migration path;
+   - security, privacy, or trust boundaries;
+   - user-visible behavior, delivery scope, or operating cost.
+5. When pausing, present the recommended target diagram, explain the key tradeoff, and ask no more than three focused decision questions. Do not hand an open-ended architecture problem back to the user.
+6. After the decision, update `Target Architecture` and continue implementation without requesting another approval for the same direction.
+
+Do not require explicit user approval for a target that can be inferred safely. The user should decide material product and architecture tradeoffs, not design the architecture for the agent.
 
 ## SPEC.md Requirements
 
@@ -129,8 +147,8 @@ When `SPEC.md` adds a concept, field, boundary, component, or phase, update `PLA
 Be proactive but respect the gate:
 
 - If the target is clear, implement the change and update docs afterward.
-- If the target is almost clear, make the smallest necessary SPEC/PLAN update first, then implement.
-- If the target is materially unclear, do not write production code. Present the architecture question or propose a concrete `Target Architecture` diagram for approval.
+- If the target can be inferred safely, record assumptions, make the smallest necessary SPEC/PLAN update, and implement without waiting for confirmation.
+- If the target contains a material architectural fork, do not write production code across that decision. Present a recommended `Target Architecture` and ask focused questions first.
 - If the user explicitly asks only for planning, do not implement code.
 
 This skill is about making architecture a live contract: current reality, target direction, implementation, and plan status should stay aligned.

@@ -132,13 +132,26 @@ Before substantial code changes:
 - Confirm that each relevant `SPEC.md` has `Current Architecture` and `Target Architecture` Mermaid diagrams.
 - Confirm that the `Target Architecture` matches the user's requested direction.
 
-If there is no clear `Target Architecture` Mermaid diagram, or if the target diagram does not match the requested work, stop before production implementation. Update or discuss the target architecture first.
+If the target is absent, stale, or incomplete, infer and draft the most reasonable target from the request, current implementation, and current diagram before asking the user. A missing diagram alone is not a reason to interrupt the user. Follow the Target Alignment rules below when the direction remains materially ambiguous.
 
 After substantial code changes:
 
 - Update `Current Architecture` in the relevant `SPEC.md` if the implemented architecture changed.
 - Update `Target Architecture` if the intended direction changed or if the target has been reached and needs to be reset.
 - Update `PLAN.md` with completed work, remaining work, next steps, acceptance criteria, risks, and verification evidence.
+
+## Target Alignment
+
+Treat target alignment as model-led reasoning, not a mandatory approval ceremony:
+
+1. Infer the intended target from the request, current implementation, and `Current Architecture`.
+2. Draft or update the target Mermaid diagram before asking questions.
+3. State important assumptions and proceed without confirmation when they are local, reversible, in scope, and preserve public contracts and data compatibility.
+4. Pause only when plausible choices would materially change system or module boundaries, public APIs or schemas, data compatibility or irreversible migrations, security or trust boundaries, user-visible behavior, delivery scope, or operating cost.
+5. When pausing, present the recommended target diagram, explain the key tradeoff, and ask no more than three focused decision questions. Do not hand an open-ended architecture problem back to the user.
+6. After the decision, update the target and continue without requesting another approval for the same direction.
+
+Do not require explicit user approval for a target that can be inferred safely. Users decide material product and architecture tradeoffs; agents design the architecture around those decisions.
 
 ## Spec / Plan Coupling
 
@@ -151,4 +164,4 @@ Specs and plans must stay in sync:
 
 ## Working Rule
 
-Architecture first, then implementation. A substantial change should not begin until the relevant target Mermaid architecture is understood well enough to guide the work.
+Architecture first, then implementation. Infer and draft the target proactively. Pause only at material architectural forks that cannot be resolved safely from the available context.

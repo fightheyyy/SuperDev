@@ -51,6 +51,16 @@ The diagrams give a strong model shared context. They do not dictate how to writ
 
 The gap between Current and Target is the problem the agent needs to solve. This is shorter and more stable than adding more prompt rules, and easier for humans and models to review together.
 
+## How Target gets decided
+
+By default, SuperDev has the agent infer and draw the most reasonable Target from the request, current code, and Current Architecture instead of handing a list of open-ended questions to the user.
+
+- For assumptions that are local, reversible, in scope, and preserve public interfaces and data compatibility: state them and proceed.
+- If plausible choices would materially change system boundaries, public interfaces, data compatibility, irreversible migrations, security boundaries, user behavior, or delivery cost: present a recommended Target Mermaid and its tradeoff, then ask no more than three focused questions.
+- After the decision, continue implementation without requesting approval again for the same direction.
+
+Users decide material product and architecture tradeoffs. The agent proposes and implements the architecture around those decisions.
+
 ## Quick start
 
 ### Codex
